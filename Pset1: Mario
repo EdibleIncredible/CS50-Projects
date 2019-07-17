@@ -1,0 +1,45 @@
+#include <cs50.h>
+#include <stdio.h>
+
+void printSpace(int);
+void printHash(int);
+
+int main(void)
+{
+    int spacenum;
+    int hashnum;
+    int pheight = get_int("Height: ");
+    
+    while (pheight < 1 || pheight > 8) {
+        pheight = get_int("Height: ");
+    }
+    
+    for (int i = 1; i <= pheight; i++)
+    {
+        spacenum = pheight - i;
+        hashnum = i;
+            
+        printSpace(spacenum);
+        printHash(hashnum);
+                    
+        printf("  ");
+            
+        printHash(hashnum);
+        printf("\n"); 
+    }
+}
+
+
+void printSpace(int n) {
+    for (int x = 0; x < n; x++)
+    {
+        printf(" ");
+    }
+}
+
+void printHash(int n) {
+    for (int x = 0; x < n; x++)
+    {
+        printf("#");
+    }
+}
