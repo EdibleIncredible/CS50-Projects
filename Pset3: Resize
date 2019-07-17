@@ -1,0 +1,227 @@
+#include <cs50.h>
+#include <stdio.h>
+
+#include "bmp.h"
+
+int main(int argc, char *argv[]) {
+    
+    // checking for number of inputs
+    if (argc != 4) {
+        printf("Usage: ./resize f infile outfile\n");
+        return 1;
+    }
+    
+    // retrieve float input
+    float f;
+    f = atof(argv[1]);
+    
+    // testing float input
+    if (f < 0.0 || f > 100.0) {
+        printf("Error: f must be within 0.0 and 100.0\n");
+        return 1;
+    }
+    else if (f == 1) {
+        
+    }
+    printf("%0.1f\n", f);
+    
+    // declare files
+    char *infile = argv[2];
+    char *outfile = argv[3];
+
+    // open input file
+    FILE *inptr = fopen(infile, "r");
+    if (inptr == NULL)
+    {
+        fprintf(stderr, "Could not open %s.\n", infile);
+        return 2;
+    }
+
+    // open output file
+    FILE *outptr = fopen(outfile, "w");
+    if (outptr == NULL)
+    {
+        fclose(inptr);
+        fprintf(stderr, "Could not create %s.\n", outfile);
+        return 3;
+    }
+    
+    
+    FILE *oldInptr = fopen(infile, "r");
+    
+    // read infile's BITMAPFILEHEADER
+    BITMAPFILEHEADER OLDbf;
+    fread(&OLDbf, sizeof(BITMAPFILEHEADER), 1, oldInptr);
+
+    // read infile's BITMAPINFOHEADER
+    BITMAPINFOHEADER OLDbi;
+    fread(&OLDbi, sizeof(BITMAPINFOHEADER), 1, oldInptr);
+
+    int oldheight = abs(OLDbi.biHeight);
+
+    // ensure infile is (likely) a 24-bit uncompressed BMP 4.0
+    if (OLDbf.bfType != 0x4d42 || OLDbf.bfOffBits != 54 || OLDbi.biSize != 40 ||
+        OLDbi.biBitCount != 24 || OLDbi.biCompression != 0)
+    {
+        fclose(outptr);
+        fclose(inptr);
+        fprintf(stderr, "Unsupported file format.\n");
+        return 4;
+    }
+
+    int OLDpadding = (4 - (OLDbi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+    printf("Pre-shif padding: %i\n", OLDpadding);
+
+
+    // read infile's BITMAPFILEHEADER
+    BITMAPFILEHEADER bf;
+    fread(&bf, sizeof(BITMAPFILEHEADER), 1, inptr);
+
+    // read infile's BITMAPINFOHEADER
+    BITMAPINFOHEADER bi;
+    fread(&bi, sizeof(BITMAPINFOHEADER), 1, inptr);    
+    
+    int RGBSize = (sizeof(RGBTRIPLE) * bi.biWidth) * abs(bi.biHeight);
+    
+    printf("Pre-Shift RGBTRIPLE Size: %i\n", RGBSize);
+    
+    // Shift width and height by f
+    printf("Pre-Shift biWidth: %i\n", bi.biWidth);
+    printf("Pre-Shift biHeight: %i\n", bi.biHeight);
+    
+    printf("Pre-Shift biSizeImage: %i\n", bi.biSizeImage);
+
+    printf("Pre-Shift bfSize: %i\n", bf.bfSize);
+
+    
+    bi.biWidth = bi.biWidth*f;
+    bi.biHeight = bi.biHeight*f;
+    
+    RGBSize = (sizeof(RGBTRIPLE) * bi.biWidth) * abs(bi.biHeight);
+    
+    printf("\nPost-Shift RGBTRIPLE Size: %i\n", RGBSize);
+    
+    
+    printf("Post-Shift biWidth: %i\n", bi.biWidth);
+    printf("Post-Shift biHeight: %i\n", bi.biHeight);
+    
+    // calculate padding for new file
+    int padding = (4 - (bi.biWidth * sizeof(RGBTRIPLE)) % 4) % 4;
+    printf("Post shift padding: %i\n", padding);
+    
+    // Calculate Pixel Size in Bytes (including padding)
+    bi.biSizeImage = ((sizeof(RGBTRIPLE) * bi.biWidth) + padding) * abs(bi.biHeight);
+    printf("Post-Shift biSizeImage: %i\n", bi.biSizeImage);
+
+    // Calculate File Size in Bytes
+    bf.bfSize = bi.biSizeImage + sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+    printf("Post-Shift bfSize: %i\n", bf.bfSize);
+    
+    // write outfile's BITMAPFILEHEADER
+    fwrite(&bf, sizeof(BITMAPFILEHEADER), 1, outptr);
+
+    // write outfile's BITMAPINFOHEADER
+    fwrite(&bi, sizeof(BITMAPINFOHEADER), 1, outptr);
+    
+    
+
+    // iterate over infile's scanlines
+    for (int i = 0, forbiHeight = oldheight; i < forbiHeight; i++)
+    {
+        
+        if (f == 1) {
+            for (int m = 0, biHeight = abs(OLDbi.biHeight); m < biHeight; m++)
+            {
+            
+                // iterate over pixels in scanline
+                for (int j = 0; j < OLDbi.biWidth; j++)
+                {
+                    // temporary storage
+                    RGBTRIPLE triple;
+        
+                    // read RGB triple from infile
+                    fread(&triple, sizeof(RGBTRIPLE), 1, inptr);
+        
+                    // write RGB triple to outfile
+                    fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+                }
+        
+                // skip over padding, if any
+                fseek(inptr, OLDpadding, SEEK_CUR);
+        
+                // then add it back (to demonstrate how)
+                for (int k = 0; k < padding; k++)
+                {
+                    fputc(0x00, outptr);
+                }
+                
+            }
+            
+            return 0;
+        }
+        else {
+            printf("\nOLDSCANLINE  ");
+            
+            // Iterate through f number of output scanlines
+            for (int x = 0; x < f; x++) {
+    
+                // return to beginning of the input scanline
+                fseek(oldInptr, 54 + (OLDbi.biWidth*sizeof(RGBTRIPLE) + OLDpadding)*i, SEEK_SET);
+                printf("input line: %lu\n", ftell(oldInptr));
+
+                
+                printf("\nNEWSCANLINE  ");
+                
+                //  Iterate through input pixels
+                for (int j = 0, oldwidth = OLDbi.biWidth; j < oldwidth; j++) {
+                    
+                    RGBTRIPLE triple; 
+                    
+                    fread(&triple, sizeof(RGBTRIPLE), 1, oldInptr);
+                    
+                    
+                    printf("\nold %i: %i|%i|%i ", j, triple.rgbtRed, triple.rgbtGreen, triple.rgbtBlue);
+                    
+                    // write f copies of input pixels to output
+                    for (int k = 0; k < f; k++) {
+                        
+                        fwrite(&triple, sizeof(RGBTRIPLE), 1, outptr);
+                        
+                        printf("new: %i|%i|%i ", triple.rgbtRed, triple.rgbtGreen, triple.rgbtBlue);
+                        
+                    }
+                
+
+                }
+                
+                // Skip input padding
+                fseek(oldInptr, OLDpadding, SEEK_CUR);
+                
+                // add padding to output
+                for (int o = 0; o < padding; o++)
+                {
+                    fputc(0x00, outptr);
+                }
+
+
+            }
+            
+            printf("\n\n");
+        }
+        
+    }
+
+
+
+
+    // close infile
+    fclose(inptr);
+
+    // close outfile
+    fclose(outptr);
+
+
+
+    return 0;
+    
+}
