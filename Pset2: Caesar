@@ -1,0 +1,114 @@
+#include <cs50.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+// Declare main function and recieve argc and argv
+int main (int argc, string argv[])
+{
+    // Test if there are more than one strings input
+    if (argc != 2)
+    {
+        // Returns a failure
+        printf("Usage: ./caesar *key*\n");
+        return 1;
+    }
+    else
+    {
+        // Sets a string to the key the user input and converts it to a variable
+        string key_string = argv[1];
+        int key_int = atoi(key_string);
+
+        // Prompts the user for the plaintext and stores the string and its length
+        string plaintxt = get_string("plaintext: ");
+        int txt_len = strlen(plaintxt);
+
+        printf("ciphertext: ");
+        
+        // For loop to run through plaintxt letter by letter converting it using the key
+        for (int i = 0; i < txt_len; i++)
+        {
+            // Sets current character to plaintxt[i]
+            char cur_char = plaintxt[i];
+            
+            // Tests to see if current character is uppercase
+            if (cur_char >= 'A' && cur_char <= 'Z')
+            {
+                // Moves down to 0 - 25 range
+                cur_char = cur_char - 65;
+                //tests to see if adding the key will go past 25
+                if (cur_char + key_int >= 25)
+                {
+                // If it will, adds the key, subtracts 26 to roll over, converts it back to uppercase ascii characters, and prints
+                cur_char = cur_char + key_int;
+                cur_char = cur_char - 26;
+                if (cur_char > 25)
+                {
+                    cur_char = cur_char % 26 + 65;
+                    printf("%c", cur_char);
+                }
+                else
+                {
+                    cur_char = cur_char + 65;
+                    printf("%c", cur_char);
+                }
+                }
+                else
+                {
+                // If it wont, adds the key, then converts it to uppercase ascii characters, and prints
+                cur_char = cur_char + key_int;
+                cur_char = cur_char + 65;
+                printf("%c", cur_char);
+                }
+            }
+            // Tests to see if current character is lowercase
+            else if (cur_char >= 'a' && cur_char <= 'z')
+            {
+                // Moves down to 0 - 25 range
+                cur_char = cur_char - 97;
+                // Tests to see if adding the key will go past 25
+                if (cur_char + key_int >= 25)
+                {
+                    // If it will, adds the key, subtracts 26 to roll over, converts it back to uppercase ascii characters, and prints
+                    cur_char = cur_char + key_int;
+                    cur_char = cur_char - 26;
+                    if (cur_char > 25)
+                    {
+                    cur_char = cur_char % 26 + 97;
+                    printf("%c", cur_char);
+                    }
+                    else
+                    {
+                    cur_char = cur_char + 97;
+                    printf("%c", cur_char);
+                    }
+                }
+                else
+                {
+                    // If it wont, adds the key, then converts it to uppercase ascii characters, and prints
+                    cur_char = cur_char + key_int;
+                    cur_char = cur_char + 97;
+                    printf("%c", cur_char);
+                } 
+            }
+            else
+            {
+                // If it is not uppercase nor lowercase, assume it is another character and print that. (ie. " " or "&")
+                printf("%c", cur_char);
+            }
+        }
+        // end line
+        printf("\n");
+    }
+}
+
+char checkupper(char cur_char)
+{
+    cur_char = cur_char - 26;
+    if (cur_char > 25)
+    {
+    cur_char = cur_char % 26 + 65;
+    }
+    return cur_char;
+}
