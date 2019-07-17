@@ -1,0 +1,479 @@
+#define _XOPEN_SOURCE
+
+#include <cs50.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+
+// declaring iteration functions
+bool check(string, string, string);
+string iterate4(int, char[], char[], string);
+string iterate3(int, char[], char[], string);
+string iterate2(int, char[], char[], string);
+string iterate1(int, char[], char[], string);
+string iterate0(int, char[], char[], string);
+
+int main(int argc, string argv[])
+{
+
+    string hashpass = argv[1];
+    
+    //printf("%s\n", hashpass);
+    
+    
+    // test for password viability
+    if (argc != 2) {
+        printf("Usage: ./crack *hash*\n");
+        return 1;
+    }
+    else {
+        // length of input
+        int hashlen = strlen(hashpass);
+        
+        // retrieve salt
+        char salt[3] = "  \0";
+        for (int i = 0; i < 2; i++) {
+            salt[i] = hashpass[i];
+            // printf("%c\n", salt[i]);
+        }
+        
+        // printf("%s\n", salt);
+        // end retrieve salt
+
+        // retrieve hash input
+        char hash[hashlen];
+        for (int i = 0; i < hashlen - 2; i++) {
+            hash[i] = hashpass[i + 2];
+            // printf("%c\n", hash[i]);
+        }
+       //  printf("%s\n", hash);
+        // end retrieve hash input
+        
+        // declare guess array
+        char guess[6] = { 65, 65, 65, 65, 65, '\0' };
+        // printf("%s\n", guess);
+        
+        string cryptOut = crypt(guess, salt);
+        // printf("%s\n", cryptOut);
+        
+        // set iteration counter
+        int iterate = 0;
+        
+        // printf("Loading.");
+        
+        // check initial guess
+        if (strcmp(cryptOut, hashpass) == 0) {
+            printf("%s\n", guess);
+            return 0;
+        }
+        else {
+            // printf("false\n");
+            
+            string result4 = iterate4(0, guess, salt, hashpass);
+            
+            string cryptOut4 = crypt(result4, salt);
+            
+            if (strcmp(cryptOut4, hashpass) == 0) {
+                printf("%s\n", guess);
+                return 0;
+            }
+            else {
+                // printf("false\n");
+                string result3 = iterate3(0, guess, salt, hashpass);
+                
+                string cryptOut3 = crypt(result3, salt);
+            
+                if (strcmp(cryptOut3, hashpass) == 0) {
+                    printf("%s\n", guess);
+                    return 0;
+                }
+                else {
+                    // printf("false\n");
+                    string result2 = iterate2(0, guess, salt, hashpass);
+                    
+                    string cryptOut2 = crypt(result2, salt);
+            
+                    if (strcmp(cryptOut2, hashpass) == 0) {
+                        printf("%s\n", guess);
+                        return 0;
+                    }
+                    else {
+                        // printf("false\n");
+                        string result1 = iterate1(0, guess, salt, hashpass);     
+                        
+                        string cryptOut1 = crypt(result1, salt);
+            
+                        if (strcmp(cryptOut1, hashpass) == 0) {
+                            printf("%s\n", guess);
+                            return 0;
+                        }
+                        else {
+                            // printf("false\n");
+                            string result0 = iterate0(0, guess, salt, hashpass);
+                            
+                            string cryptOut0 = crypt(result0, salt);
+            
+                            if (strcmp(cryptOut0, hashpass) == 0) {
+                                printf("%s\n", guess);
+                                return 0;
+                            }
+                            else {
+                                printf("Error: Could not parse password\nTerminating\n");
+                                return 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }        
+
+    }
+    
+    return 0;
+    
+}
+
+// Check Function
+bool check(string guess, string salt, string hashpass) {
+    string cryptOut = crypt(guess, salt);
+    
+    if (strcmp(cryptOut, hashpass) == 0) {
+        //printf("true\n");
+        return true;
+    }
+    else {
+        //printf("false\n");
+        //printf("%s", guess);
+        return false;
+    }
+}
+
+// Iterate 4 Function
+string iterate4(int fromtop, char guess[], char salt[], string hashpass) {
+    guess[4] = 64;
+    
+    // Run through CAPITAL letters
+    for (int i = 0; i < 26; i++) {
+        guess[4] = guess[4] + 1;
+        // printf("%c", guess[4]);
+        
+        if (fromtop == 0) {
+            bool result4 = check(guess, salt, hashpass);
+            if (result4 == true) {
+                // printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+        else {
+            ;
+        }
+    }
+    
+    guess[4] = 96;
+    
+    // Run through lowercase letters
+    for (int i = 0; i < 26; i++) {
+        guess[4] = guess[4] + 1;
+        // printf("%c", guess[4]);
+        
+        if (fromtop == 0) {
+            bool result4 = check(guess, salt, hashpass);
+            if (result4 == true) {
+                // printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+    }
+    
+    guess[4] = 0;
+    if (fromtop == 0) {
+        bool result4 = check(guess, salt, hashpass);
+        if (result4 == true) {
+            // printf("%s", guess);
+            return guess;
+        }
+        else {
+            ;
+        }
+    }
+    
+    
+    // printf("\n");
+    return "false";
+    
+    
+}
+
+// Iterate 3 Function
+string iterate3(int fromtop, char guess[], char salt[], string hashpass) {
+    guess[3] = 64;
+    
+    //Run through UPPERCASE letters
+    for (int i = 0; i < 26; i++) {
+        guess[3] = guess[3] + 1;
+        // printf("%c     ", guess[3]);
+        
+        // call guess[4] iteration
+        iterate4(0, guess, salt, hashpass);
+        
+        if (fromtop == 0) {
+            bool result3 = check(guess, salt, hashpass);
+            if (result3 == true) {
+                //printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+        else {
+            ;
+        }
+    }
+    
+    guess[3] = 96;
+    
+    // run through lowercase letters
+    for (int i = 0; i < 26; i++) {
+        guess[3] = guess[3] + 1;
+        // printf("%c     ", guess[3]);
+        
+        // call guess[4] iteration
+        iterate4(0, guess, salt, hashpass);
+        
+        if (fromtop == 0) {
+            bool result3 = check(guess, salt, hashpass);
+            if (result3 == true) {
+                //printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+        else {
+            ;
+        }
+    }
+    
+    guess[3] = 0;
+    if (fromtop == 0) {
+        bool result3 = check(guess, salt, hashpass);
+        if (result3 == true) {
+            // printf("%s", guess);
+            return guess;
+        }
+        else {
+            ;
+        }
+    }
+    
+    // printf("\n");
+    return "false";
+    
+}
+
+// Iterate 2 Function
+string iterate2(int fromtop, char guess[], char salt[], string hashpass) {
+    guess[2] = 64;
+    
+    //Run through UPPERCASE letters
+    for (int i = 0; i < 26; i++) {
+        guess[2] = guess[2] + 1;
+        // printf("%c", guess[2]);
+        
+        // call guess[3] iteration
+        iterate3(0, guess, salt, hashpass);
+        
+        if (fromtop == 0) {
+            bool result2 = check(guess, salt, hashpass);
+            if (result2 == true) {
+                //printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+        else {
+            ;
+        }
+    }
+    
+    guess[2] = 96;
+    
+    // run through lowercase letters
+    for (int i = 0; i < 26; i++) {
+        guess[2] = guess[2] + 1;
+        // printf("%c", guess[2]);
+        
+        // call guess[3] iteration
+        iterate3(0, guess, salt, hashpass);
+        
+        if (fromtop == 0) {
+            bool result2 = check(guess, salt, hashpass);
+            if (result2 == true) {
+                //printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+        else {
+            ;
+        }
+    }
+    
+    guess[2] = 0;
+    if (fromtop == 0) {
+        bool result2 = check(guess, salt, hashpass);
+        if (result2 == true) {
+            // printf("%s", guess);
+            return guess;
+        }
+        else {
+            ;
+        }
+    }
+    
+    // printf("\n");
+    return "false";
+    
+}
+
+// Iterate 1 Function
+string iterate1(int fromtop, char guess[], char salt[], string hashpass) {
+    guess[1] = 64;
+    
+    //Run through UPPERCASE letters
+    for (int i = 0; i < 26; i++) {
+        // printf(".");
+        
+        guess[1] = guess[1] + 1;
+        //printf("%c", guess[1]);
+        
+        // call guess[2] iteration
+        iterate2(0, guess, salt, hashpass);
+        
+        if (fromtop == 0) {
+            bool result1 = check(guess, salt, hashpass);
+            if (result1 == true) {
+                //printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+        else {
+            ;
+        }
+    }
+    
+    guess[1] = 96;
+    
+    // run through lowercase letters
+    for (int i = 0; i < 26; i++) {
+        // printf(".");
+        
+        guess[1] = guess[1] + 1;
+        //printf("%c", guess[1]);
+        
+        // call guess[2] iteration
+        iterate2(0, guess, salt, hashpass);
+        
+        if (fromtop == 0) {
+            bool result1 = check(guess, salt, hashpass);
+            if (result1 == true) {
+                //printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+        else {
+            ;
+        }
+    }
+    
+    guess[1] = 0;
+    if (fromtop == 0) {
+        bool result1 = check(guess, salt, hashpass);
+        if (result1 == true) {
+            // printf("%s", guess);
+            return guess;
+        }
+        else {
+            ;
+        }
+    }
+    
+    // printf("\n");
+    return "false";
+    
+}
+
+// Iterate 0 Function
+string iterate0(int fromtop, char guess[], char salt[], string hashpass) {
+    guess[0] = 64;
+    
+    //Run through UPPERCASE letters
+    for (int i = 0; i < 26; i++) {
+        // printf(".");
+        
+        guess[0] = guess[0] + 1;
+        //printf("%c", guess[0]);
+        
+        // call guess[1] iteration
+        iterate1(0, guess, salt, hashpass);
+        
+        if (fromtop == 0) {
+            bool result0 = check(guess, salt, hashpass);
+            if (result0 == true) {
+                //printf("%s", guess);
+                return guess;
+            }
+            else {
+                ;
+            }
+        }
+        else {
+            ;
+        }
+    }
+    
+    guess[0] = 96;
+    
+    // run through lowercase letters
+    for (int i = 0; i < 26; i++) {
+        // printf(".");
+        
+        guess[0] = guess[0] + 1;
+        //printf("%c", guess[0]);
+        
+        // call guess[1] iteration
+        
+        if (strcmp(iterate1(1, guess, salt, hashpass), "false") != 0) {
+        //printf("%s", guess);
+        return guess;   
+        }
+        else {
+            ;
+        }
+    }
+    
+    
+    
+    //printf("\n");
+    return "false";
+    
+}
