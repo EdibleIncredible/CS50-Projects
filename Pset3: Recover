@@ -1,0 +1,136 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <cs50.h>
+#include <string.h>
+
+string get_filename(int);
+
+int main(int argc, char *argv[])
+{
+    
+    // Test argument count
+    if (argc != 2) 
+    {
+        printf("Usage: ./recover filename\n");
+        return 1;
+    }
+    
+    // set input to command line argument
+    string input = argv[1];
+    
+    // Open input file and check for validity
+    FILE *inptr = fopen(input, "r");
+    if (inptr == NULL) 
+    {
+        printf("Could not open file\n");
+        return 1;
+    }
+    
+    fseek(inptr, 0, SEEK_END);
+    int filesize = ftell(inptr);
+    fseek(inptr, 0, SEEK_SET);
+    
+    // /printf("%i\n", filesize);
+    
+    int blocknum = filesize / 512;
+    int blockiter;
+    unsigned char blockread[512];
+    
+    // /printf("%i\n", blocknum);
+    
+    // Finding initial .jpeg file
+    for (int i = 0; i < blocknum; i++) 
+    {
+        
+        // /printf("%i\n", i);
+        
+        blockiter = 512 * i;
+        // /printf("%i \n", blockiter);
+        
+        fread(blockread, 512, 1, inptr);
+        // /printf("Curser Loco: %li\n", ftell(inptr));
+
+        
+        // /printf("marker1\n");
+        
+        if (blockread[0] == 0xff && blockread[1] == 0xd8 && blockread[2] == 0xff) 
+        {
+            
+            // /printf(" found\n");
+            break;
+            
+        }
+        else 
+        {
+            // /printf("marker2\n");
+        }
+        
+        // /printf("marker3\n");
+        
+    }
+    
+    // /printf("Break\n");
+    // /printf("Curser Loco: %li\n", ftell(inptr));
+    
+    fseek(inptr, -512, SEEK_CUR);
+    
+    // /printf("Curser Loco: %li\n", ftell(inptr));
+    
+    int nameblock = 0;
+    
+    // Read first block
+    unsigned char buffer[512];
+    
+    fread(&buffer, 512, 1, inptr);
+    
+    string filename = get_filename(nameblock);
+    
+    FILE *curfile = fopen(filename, "w");
+    
+    FILE *newfile = NULL;
+    
+    fwrite(&buffer, 512, 1, curfile);
+    
+    int forval = blocknum - (ftell(inptr)/512);
+    // /printf("%i\n", forval);
+    
+    for (int i = 0; i < forval; i++) 
+    {
+        
+        fread(&buffer, 512, 1, inptr);
+        
+        if (buffer[0] == 0xff && buffer[1] == 0xd8 && buffer[2] == 0xff) 
+        {
+            
+            nameblock++;
+            
+            fclose(curfile);
+            
+            filename = get_filename(nameblock);
+            
+            newfile = fopen(filename, "w");
+            
+            fwrite(&buffer, 512, 1, curfile);
+            
+        }
+        else 
+        {
+            
+            fwrite(&buffer, 512, 1, curfile);
+            
+        }
+        
+    }
+    
+    return 0;
+    
+}
+
+string get_filename(i) 
+{
+
+    string filename = malloc(9);
+    sprintf(filename, "%03i.jpg", i);
+    
+    return filename;
+}
