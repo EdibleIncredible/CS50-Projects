@@ -1,0 +1,95 @@
+#include <cs50.h>
+#include <stdio.h>
+#include <math.h>
+
+void inval(void) {
+    printf("INVALID\n");
+}
+
+int main(void) 
+{
+    long cardnum = get_long("Number: ");
+    string cardtype = " ";
+    int cardlength = 1 + log10(cardnum);
+    
+    //printf("%i\n", cardlength);
+    
+    if (cardlength < 13 || cardlength > 16) {
+        inval();
+    }
+    else{
+        long cardDig[cardlength];
+        int luhnOne = 0;
+        long cardNewNum = cardnum;
+        int tempval;
+        int sectempval;
+        long luhnVals[40];
+        
+        for (int i = cardlength - 1; i >= 0; i--)
+        {
+            cardDig[i] = cardNewNum % 10;
+            cardNewNum = cardNewNum / 10;
+        }
+        
+        for (int i = 0; i <= cardlength - 1; i++)
+        {
+            //printf("%li", cardDig[i]);
+        }
+        
+        //printf("\n");
+        
+        for (int i = cardlength - 2; i >= 0; i = i - 2)
+        {
+           // printf("%li", cardDig[i]);
+            tempval = cardDig[i] * 2;
+            if (tempval > 9) {
+                tempval = tempval - 10;
+                sectempval = 1;
+            }
+            else {
+                sectempval = 0;
+            }
+            luhnOne = luhnOne + tempval + sectempval;
+        }
+
+        //printf("\n");
+        //printf("%i", luhnOne);        
+        //printf("\n");
+
+        for (int i = cardlength - 1; i >= 0; i = i - 2)
+        {
+            luhnOne = luhnOne + cardDig[i];
+        }
+        
+        //printf("%i", luhnOne);
+       // printf("\n");
+        
+        if (luhnOne % 10 == 0) {
+            if (cardDig[0] == 3)
+            {
+                if (cardDig[1] == 4 || cardDig[1] == 7){
+                   printf("AMEX\n"); 
+                }
+                else {
+                    inval();
+                }
+            }
+            else if (cardDig[0] == 4) {
+                printf("VISA\n");
+            }
+            else if (cardDig[0] == 5) {
+                if (cardDig[1] == 1 || cardDig[1] == 2 || cardDig[1] == 3 || cardDig[1] == 4 || cardDig[1] == 5) {
+                    printf("MASTERCARD\n");
+                }
+                else {
+                    inval();
+                }
+            }
+        }
+        else {
+            inval();
+        }
+        
+    }
+    
+}
