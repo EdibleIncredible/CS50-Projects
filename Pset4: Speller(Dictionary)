@@ -1,0 +1,218 @@
+// Implements a dictionary's functionality
+
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#include "dictionary.h"
+
+// Represents number of children for each node in a trie
+#define N 27
+
+// Represents a node in a trie
+typedef struct node
+{
+    char character;
+    bool is_word;
+    struct node *children[N];
+}
+node;
+
+// Represents a trie
+node *root;
+
+node *trav;
+
+int dicsize;
+bool isloaded;
+
+void recurfree(node *);
+
+// Loads dictionary into memory, returning true if successful else false
+bool load(const char *dictionary)
+{
+    dicsize = 0;
+
+    // Initialize trie
+    root = malloc(sizeof(node));
+    if (root == NULL)
+    {
+        return false;
+    }
+    else {
+        isloaded = true;
+    }
+    root->is_word = false;
+    for (int i = 0; i < N; i++)
+    {
+        root->children[i] = NULL;
+        root->character = '\0';
+    }
+
+    // Open dictionary
+    FILE *file = fopen(dictionary, "r");
+    if (file == NULL)
+    {
+        unload();
+        return false;
+    }
+
+    // Buffer for a word
+    char word[LENGTH + 1];
+
+    // Insert words into trie
+    while (fscanf(file, "%s", word) != EOF)
+    {
+
+        // /printf("%s\n", word);
+
+         trav = root;
+
+        for (int i = 0; i < strlen(word); i++) {
+
+            // /printf("%c ", word[i]);
+
+            int letloc = 0;
+            
+            char curlet = tolower(word[i]);
+
+            if (word[i] == '\'') {
+                letloc = 26;
+            }
+            else {
+                letloc = curlet - 97;
+            }
+
+            if (trav->children[letloc] == NULL) {
+
+                // /printf(" newnode ");
+
+                node *newnode = malloc(sizeof(node));
+
+                trav->children[letloc] = newnode;
+
+                trav = newnode;
+            }
+            else {
+
+                trav = trav->children[letloc];
+
+            }
+
+
+        }
+
+        dicsize++;
+
+        trav->is_word = true;
+        // /printf("%d", trav->is_word);
+
+        // /printf("\n");
+
+    }
+
+    // Close dictionary
+    fclose(file);
+
+    // Indicate success
+    return true;
+}
+
+// Returns number of words in dictionary if loaded else 0 if not yet loaded
+unsigned int size(void)
+{
+    if (isloaded == true) {
+        // printf("%i\n", dicsize);
+        return dicsize;
+    }
+    else {
+        return 0;
+    }
+}
+
+// Returns true if word is in dictionary else false
+bool check(const char *word)
+{
+
+    int len = strlen(word);
+    // printf("%i ", len);
+
+    int letlocCheck = 0;
+    trav = root;
+
+    for (int i = 0; i < len; i++) {
+
+        char letter = tolower(word[i]);
+
+        if (letter == '\'') {
+
+            letlocCheck = 26;
+
+        }
+        else {
+            letlocCheck = letter - 97;
+            // printf("%i", letlocCheck);
+        }
+
+        if (trav->children[letlocCheck] == NULL) {
+
+            // printf("false ");
+            return false;
+
+        }
+        else {
+
+            trav = trav->children[letlocCheck];
+
+        }
+
+    }
+
+    if (trav->is_word == true) {
+
+        // printf("true\n");
+        return true;
+
+    }
+    else {
+
+        // printf("false");
+        return false;
+
+    }
+
+}
+
+// Unloads dictionary from memory, returning true if successful else false
+bool unload(void)
+{
+
+    node *cursor = root;
+
+    recurfree(cursor);
+
+    free(root);
+
+    return true;
+}
+
+void recurfree(node *subroot) {
+
+    for (int i = 0; i < N; i++) {
+
+        if (subroot->children[i] != NULL) {
+
+            node *child = subroot->children[i];
+
+            recurfree(child);
+
+            free(child);
+
+        }
+
+    }
+
+}
+
